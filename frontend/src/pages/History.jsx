@@ -9,7 +9,7 @@ const History = () => {
     const fetchHistory = async () => {
       try {
         const token = localStorage.getItem('logym_token');
-        const response = await axios.get('http://localhost:8000/workouts/history', {
+        const response = await axios.get('https://logym-api.onrender.com/workouts/history', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

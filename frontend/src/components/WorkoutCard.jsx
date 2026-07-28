@@ -73,7 +73,7 @@ const WorkoutCard = ({ title, initialExercises }) => {
     
     try {
       const token = localStorage.getItem('logym_token');
-      await axios.post('http://localhost:8000/workouts', payload, {
+      await axios.post('https://logym-api.onrender.com/workouts', payload, {
       headers: {
       'Authorization': `Bearer ${token}`
       }

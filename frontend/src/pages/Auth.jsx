@@ -17,14 +17,14 @@ const Auth = ({ setToken }) => {
         formData.append('username', username);
         formData.append('password', password);
         
-        const response = await axios.post('http://localhost:8000/login', formData);
+        const response = await axios.post('https://logym-api.onrender.com/login', formData);
         const token = response.data.access_token;
         
         localStorage.setItem('logym_token', token);
         localStorage.setItem('logym_username', username);
         setToken(token);
       } else {
-        await axios.post('http://localhost:8000/register', {
+        await axios.post('https://logym-api.onrender.com/register', {
           username: username,
           password: password
         });
