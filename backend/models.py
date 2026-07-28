@@ -1,7 +1,11 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from database import Base
+
+# Türkiye saatini (UTC+3) hesaplayan yardımcı fonksiyon
+def get_tr_time():
+    return datetime.now(timezone(timedelta(hours=3)))
 
 class User(Base):
     __tablename__ = "users"
@@ -14,11 +18,11 @@ class User(Base):
 class Workout(Base):
     __tablename__ = "workouts"
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id")) # YENİ EKLENDİ
+    user_id = Column(Integer, ForeignKey("users.id"))
     card_type = Column(String, index=True)
-    date = Column(DateTime, default=datetime.now)
+    date = Column(DateTime, default=get_tr_time)
     
-    owner = relationship("User", back_populates="workouts") # YENİ EKLENDİ
+    owner = relationship("User", back_populates="workouts")
     exercises = relationship("Exercise", back_populates="workout", cascade="all, delete-orphan")
 
 class Exercise(Base):

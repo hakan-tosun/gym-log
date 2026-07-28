@@ -1,11 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ExerciseRow from './ExerciseRow';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const WorkoutCard = ({ title, initialExercises }) => {
+const WorkoutCard = ({ title: defaultTitle, initialExercises }) => {
+  const [title, setTitle] = useState(defaultTitle);
   const [exercises, setExercises] = useState(initialExercises);
+  const [resetTemplate, setResetTemplate] = useState(initialExercises);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchLastWorkout = async () => {
+      try {
+        const token = localStorage.getItem('logym_token');
+        const response = await axios.get('https://logym-api.onrender.com/workouts', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const workouts = response.data;
+        const lastWorkout = workouts
+          .filter(w => w.card_type === defaultTitle || w.card_type === title)
+          .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+
+        if (lastWorkout && lastWorkout.exercises && lastWorkout.exercises.length > 0) {
+          const loadedExercises = lastWorkout.exercises.map((ex, index) => ({
+            id: Date.now() + Math.random() + index,
+            name: ex.name,
+            sets_data: [{ id: Date.now() + Math.random(), set_number: 1, reps: 0, weight: 0 }]
+          }));
+          
+          setExercises(loadedExercises);
+          setResetTemplate(loadedExercises);
+        }
+      } catch (error) {
+        console.error("Geçmiş antrenman hareketleri çekilemedi:", error);
+      }
+    };
+
+    fetchLastWorkout();
+  }, [defaultTitle, title]);
 
   const handleUpdateExerciseName = (exerciseId, newName) => {
     setExercises((prev) => prev.map((ex) => 
@@ -60,7 +93,7 @@ const WorkoutCard = ({ title, initialExercises }) => {
 
   const handleReset = () => {
     if (window.confirm(`${title} kartındaki tüm değerleri sıfırlamak istediğinize emin misiniz?`)) {
-      setExercises(initialExercises);
+      setExercises(resetTemplate);
     }
   };
 
@@ -74,10 +107,8 @@ const WorkoutCard = ({ title, initialExercises }) => {
     try {
       const token = localStorage.getItem('logym_token');
       await axios.post('https://logym-api.onrender.com/workouts', payload, {
-      headers: {
-      'Authorization': `Bearer ${token}`
-      }
-  });
+      headers: { 'Authorization': `Bearer ${token}` }
+      });
       alert(`${title} başarıyla kaydedildi!`);
       navigate('/history');
     } catch (error) {
@@ -88,7 +119,25 @@ const WorkoutCard = ({ title, initialExercises }) => {
 
   return (
     <div className="workout-card">
-      <h2 className="card-title">{title}</h2>
+      <input 
+        type="text" 
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="card-title-input"
+        style={{ 
+          width: '100%', 
+          textAlign: 'center', 
+          fontSize: '1.5em', 
+          fontWeight: 'bold', 
+          border: 'none', 
+          background: 'transparent', 
+          color: 'inherit',
+          marginBottom: '20px',
+          outline: 'none',
+          borderBottom: '2px dashed #ccc'
+        }}
+        title="Kart ismini değiştirmek için tıklayın"
+      />
       
       <div className="exercises-list">
         {exercises.map((exercise) => (
